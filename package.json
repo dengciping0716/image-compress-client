@@ -2,18 +2,35 @@
   "name": "image-tool",
   "version": "0.1.0",
   "private": true,
+  "author": "dengciping0716@gmail.com",
+  "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "electron:build-win32": "vue-cli-service electron:build --win --ia32",
+    "electron:build-win64": "vue-cli-service electron:build --win --x64",
+    "electron:build-mac": "vue-cli-service electron:build --mac",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
   },
+  "main": "background.js",
   "dependencies": {
+    "@mdi/font": "5.9.55",
     "core-js": "^3.6.5",
+    "imagemin": "7",
+    "imagemin-pngquant": "^9.0.2",
+    "images": "^3.2.3",
+    "roboto-fontface": "*",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
+    "vuetify": "^2.4.0",
     "vuex": "^3.4.0"
   },
   "devDependencies": {
+    "@mdi/font": "^6.5.95",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
@@ -21,12 +38,20 @@
     "@vue/cli-service": "~4.5.0",
     "@vue/eslint-config-prettier": "^6.0.0",
     "babel-eslint": "^10.1.0",
+    "babel-preset-electron": "^1.4.15",
+    "electron": "^13.0.0",
+    "electron-builder": "^22.14.5",
+    "electron-devtools-installer": "^3.1.0",
+    "electron-rebuild": "^3.2.5",
     "eslint": "^6.7.2",
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^6.2.2",
     "prettier": "^2.2.1",
-    "sass": "^1.26.5",
-    "sass-loader": "^8.0.2",
-    "vue-template-compiler": "^2.6.11"
+    "sass": "~1.32.0",
+    "sass-loader": "^10.0.0",
+    "vue-cli-plugin-electron-builder": "~2.1.1",
+    "vue-cli-plugin-vuetify": "~2.4.5",
+    "vue-template-compiler": "^2.6.11",
+    "vuetify-loader": "^1.7.0"
   }
 }
