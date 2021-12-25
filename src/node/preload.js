@@ -3,7 +3,7 @@
  * @Email: dengciping0716@gmail.com
  * @Date: 2021-12-22 13:08:53
  * @LastEditors: ciping.deng
- * @LastEditTime: 2021-12-25 16:02:12
+ * @LastEditTime: 2021-12-25 18:03:39
  * @FilePath: /image-tool/src/node/preload.js
  * @Description:
  */
@@ -20,7 +20,8 @@ import * as FileUtils from './file';
 // const imageminPngquant = require('imagemin-pngquant');
 
 // const imagemin = import('imagemin');
-const images = require('images');
+// const images = require('images');
+const sharp = require('sharp');
 
 const MyApi = {
   controleSize: async function (source, targetDir, width) {
@@ -36,32 +37,167 @@ const MyApi = {
     let fileName = path.parse(source).base;
     let dist = path.join(targetDir, fileName);
 
-    let error = await new Promise((resolve, reject) => {
-      images(source)
-        .resize(width)
-        .saveAsync(dist, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-    }).catch((err) => err);
+    return sharp(source)
+      .resize(width)
+      .toFile(dist)
+      .then((data) => {
+        // console.log(444, data);
+        return {
+          msg: 'success',
+          sPath: source,
+          tPath: dist,
+          tSize: data.size,
+        };
+      })
+      .catch((err) => ({
+        isError: true,
+        msg: err,
+      }));
 
-    if (error) {
+    // let error = await new Promise((resolve, reject) => {
+    //
+    //   images(source)
+    //     .resize(width)
+    //     .saveAsync(dist, (err) => {
+    //       if (err) {
+    //         reject(err);
+    //       } else {
+    //         resolve();
+    //       }
+    //     });
+    // }).catch((err) => err);
+    //
+    // if (error) {
+    //   return {
+    //     isError: true,
+    //     msg: error,
+    //   };
+    // } else {
+    //   let file = await fspromises.stat(dist);
+    //   return {
+    //     msg: 'success',
+    //     sPath: source,
+    //     tPath: dist,
+    //     tSize: file.size,
+    //   };
+    // }
+  },
+  // controleSize2: async function (source, targetDir, width) {
+  //   try {
+  //     await fspromises.mkdir(targetDir, { recursive: true });
+  //   } catch (error) {
+  //     return {
+  //       isError: true,
+  //       msg: error,
+  //     };
+  //   }
+
+  //   let fileName = path.parse(source).base;
+  //   let dist = path.join(targetDir, fileName);
+
+  //   let error = await new Promise((resolve, reject) => {
+  //     images(source)
+  //       .resize(width)
+  //       .saveAsync(dist, (err) => {
+  //         if (err) {
+  //           reject(err);
+  //         } else {
+  //           resolve();
+  //         }
+  //       });
+  //   }).catch((err) => err);
+
+  //   if (error) {
+  //     return {
+  //       isError: true,
+  //       msg: error,
+  //     };
+  //   } else {
+  //     let file = await fspromises.stat(dist);
+  //     return {
+  //       msg: 'success',
+  //       sPath: source,
+  //       tPath: dist,
+  //       tSize: file.size,
+  //     };
+  //   }
+  // },
+  controleType: async function (source, targetDir, type, width) {
+    try {
+      await fspromises.mkdir(targetDir, { recursive: true });
+    } catch (error) {
       return {
         isError: true,
         msg: error,
       };
-    } else {
-      let file = await fspromises.stat(dist);
-      return {
-        msg: 'success',
-        sPath: source,
-        tPath: dist,
-        tSize: file.size,
-      };
     }
+
+    let fileName = path.parse(source).name + '.' + type;
+    let dist = path.join(targetDir, fileName);
+
+    let p = width ? sharp(source).resize(width) : sharp(source);
+    return p
+      .toFormat(type)
+      .toFile(dist)
+      .then((data) => {
+        // console.log(444, data);
+        return {
+          msg: 'success',
+          sPath: source,
+          tPath: dist,
+          tSize: data.size,
+        };
+      })
+      .catch((err) => ({
+        isError: true,
+        msg: err,
+      }));
+
+    // let error = await new Promise((resolve, reject) => {
+    //   if (width) {
+    //     images(source)
+    //       .resize(width)
+    //       .saveAsync(dist, (err) => {
+    //         if (err) {
+    //           reject(err);
+    //         } else {
+    //           resolve();
+    //         }
+    //       });
+    //   } else {
+    //     images(source).saveAsync(dist, (err) => {
+    //       if (err) {
+    //         reject(err);
+    //       } else {
+    //         resolve();
+    //       }
+    //     });
+    //   }
+    //   images(source)
+    //     .resize(width)
+    //     .saveAsync(dist, type, (err) => {
+    //       if (err) {
+    //         reject(err);
+    //       } else {
+    //         resolve();
+    //       }
+    //     });
+    // }).catch((err) => err);
+
+    // if (error) {
+    //   return {
+    //     isError: true,
+    //     msg: error,
+    //   };
+    // } else {
+    //   let file = await fspromises.stat(dist);
+    //   return {
+    //     msg: 'success',
+    //     sPath: source,
+    //     tPath: dist,
+    //     tSize: file.size,
+    //   };
+    // }
   },
   controleMiny: async function (source, targetDir, quality = 100) {
     try {

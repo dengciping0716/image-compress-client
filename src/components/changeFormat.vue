@@ -3,8 +3,8 @@
  * @Email: dengciping0716@gmail.com
  * @Date: 2021-12-23 14:26:33
  * @LastEditors: ciping.deng
- * @LastEditTime: 2021-12-25 18:07:02
- * @FilePath: /image-tool/src/components/compromise.vue
+ * @LastEditTime: 2021-12-25 18:06:47
+ * @FilePath: /image-tool/src/components/changeFormat.vue
  * @Description: 
 -->
 
@@ -13,10 +13,12 @@
     <upload-dragger class="m-content overflow-y-auto" @file="onSelectFile">
       <div v-if="!listData.length" class="upload-panel" @click.stop="handleClick">
         <v-row class="text-center">
-          <v-img :src="require('../assets/icon-logo.svg')" class="my-3" contain height="160" />
+          <v-img :src="require('../assets/icon-file-change.svg')" class="my-3" contain height="160" />
         </v-row>
         <v-row justify="center"><span class="text-h6">拖拽图片或文件夹到这里！</span></v-row>
-        <v-row justify="center"><span class="text-caption">支持：PNG、JGP、GIF</span></v-row>
+        <v-row justify="center">
+          <span class="text-caption">支持：{{ fileTypeStr }}</span>
+        </v-row>
         <v-file-input ref="input" chips accept="image/*" multiple truncate-length="15" @change="onSelectFile"></v-file-input>
       </div>
 
@@ -55,7 +57,9 @@
     <v-footer fixed>
       <v-row no-gutters justify="space-between">
         <div>
-          <span class="text-button">{{ listData.length }} 个任务</span>
+          <span class="text-h6">格式转化为：</span>
+          <v-select hide-details size="mini" class="my-0 py-0" dense :items="fileType" v-model="targetType" solo style="width: 120px; display: inline-block"></v-select>
+          <!-- <span class="text-caption">{{ listData.length }} 个任务</span> -->
         </div>
         <div>
           <v-btn v-for="(icon, index) in icons" :key="icon" class="mx-2" icon @click.stop="handleMenu(index)">
@@ -80,20 +84,13 @@
           <v-card-text class="py-0">
             <v-text-field @click="handleOutPath" readonly outlined hide-details="auto" dense v-model="config.dirname"></v-text-field>
           </v-card-text>
-          <v-subheader>压缩质量 </v-subheader>
-          <v-card-text class="py-0">
-            <v-slider inverse-label v-model="config.quality" :label="config.quality + '%'" dense :step="5" :max="100" :min="30" hide-details> </v-slider>
-          </v-card-text>
-          <!-- 分辨率修改 -->
-          <!-- <v-row>
-            <v-divider class="mx-4 my-4"></v-divider>
-          </v-row>
+
           <v-card-title primary-title class="py-0">
             <v-switch hide-details v-model="config.withScale" label="分辨率修改" dense></v-switch>
           </v-card-title>
           <v-card-text v-if="config.withScale">
             <v-text-field class="my-4" outlined hide-details="auto" type="number" dense label="宽" placeholder="自适应" v-model="config.width"></v-text-field>
-          </v-card-text> -->
+          </v-card-text>
         </v-card>
       </v-form>
     </v-navigation-drawer>
@@ -103,10 +100,15 @@
 <script>
 import uploadDragger from './upload-dragger.vue';
 import _ from 'lodash';
+
+const fileType = ['png', 'jpeg', 'webp'];
+const fileTypeStr = fileType.map((v) => v.toUpperCase()).join('、');
 export default {
   name: '',
   components: { uploadDragger },
   data: () => ({
+    fileType,
+    fileTypeStr,
     config: {
       dirname: '',
       quality: 80,
@@ -114,12 +116,13 @@ export default {
       width: '',
       height: '',
     },
+    targetType: 'png',
     drawer: false,
     listData: [],
     icons: ['mdi-delete-outline', 'mdi-refresh', 'mdi-folder-open-outline', 'mdi-cog'],
   }),
   async mounted() {
-    let configStr = localStorage.getItem('key_config');
+    let configStr = localStorage.getItem('key_change_config');
     if (configStr) {
       this.config = JSON.parse(configStr);
     } else {
@@ -131,7 +134,7 @@ export default {
       window.FileAPI.openPath(tPath);
     },
     saveConfig() {
-      localStorage.setItem('key_config', JSON.stringify(this.config));
+      localStorage.setItem('key_change_config', JSON.stringify(this.config));
       this.drawer = false;
     },
     handleMenu(index) {
@@ -192,7 +195,7 @@ export default {
       });
     },
     async handleRefresh() {
-      let list = this.listData.filter((v) => v.status == 0 || v.status == 2);
+      let list = this.listData; //.filter((v) => v.status == 0 || v.status == 2);
       list.forEach((v) => {
         this.start(v);
       });
@@ -210,28 +213,19 @@ export default {
       let config = this.config;
 
       file.status = '1'; //'压缩中'
-      file.statusName = `压缩中`;
-      let res = {};
+      file.statusName = `转化中`;
+
       let sPath = file.path;
       let tPath = config.dirname;
-      if (config.withScale) {
-        res = await window.myAPI.controleSize(sPath, tPath, Number(config.width));
-        if (res.isError) {
-          file.isError = true;
-          file.status = '2'; //'压缩失败'
-          file.statusName = `${res.msg}`;
-          return;
-        }
-        sPath = res.tPath;
-      }
-
-      res = await window.myAPI.controleMiny(sPath, tPath, Number(config.quality));
+      let res = {};
+      res = await window.myAPI.controleType(sPath, tPath, this.targetType, config.withScale ? Number(config.width) : 0);
       if (res.isError) {
         file.isError = true;
         file.status = '2'; //'压缩失败'
         file.statusName = `${res.msg}`;
         return;
       }
+
       let sSize = file.size;
       let tSize = res.tSize;
       let subSize = tSize - sSize;

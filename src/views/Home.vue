@@ -3,7 +3,7 @@
  * @Email: dengciping0716@gmail.com
  * @Date: 2021-12-21 11:07:26
  * @LastEditors: ciping.deng
- * @LastEditTime: 2021-12-23 17:01:42
+ * @LastEditTime: 2021-12-25 16:14:55
  * @FilePath: /image-tool/src/views/Home.vue
  * @Description: 
 -->
@@ -17,15 +17,16 @@
     </v-row>
 
     <compromise v-show="!current"></compromise>
-    <compromise v-show="current"></compromise>
+    <change-format v-show="current"></change-format>
   </v-container>
 </template>
 
 <script>
+import ChangeFormat from '../components/changeFormat.vue';
 import compromise from '../components/compromise.vue';
 export default {
   name: 'home',
-  components: { compromise },
+  components: { compromise, ChangeFormat },
   data: () => ({
     current: 0,
   }),
