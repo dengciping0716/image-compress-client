@@ -1,3 +1,8 @@
-#app{
-    background: linear-gradient(#ff9666,#f5c368 ) ;
+#app {
+    background: linear-gradient(#ff9666, #f5c368);
+
+    .v-system-bar {
+        -webkit-app-region: drag;
+        background-color: transparent !important;
+    }
 }

@@ -3,14 +3,18 @@
  * @Email: dengciping0716@gmail.com
  * @Date: 2021-12-22 13:08:53
  * @LastEditors: ciping.deng
- * @LastEditTime: 2021-12-22 15:58:13
+ * @LastEditTime: 2021-12-25 16:02:12
  * @FilePath: /image-tool/src/node/preload.js
  * @Description:
  */
-const { contextBridge } = require('electron');
-
+import { contextBridge, ipcRenderer, shell } from 'electron';
+import { promises as fspromises } from 'fs';
+import path from 'path';
 import imagemin from 'imagemin';
 import imageminPngquant from 'imagemin-pngquant';
+const imageminGifsicle = require('imagemin-gifsicle');
+const imageminJpegtran = require('imagemin-jpegtran');
+import * as FileUtils from './file';
 
 // const imagemin = require('imagemin');
 // const imageminPngquant = require('imagemin-pngquant');
@@ -18,38 +22,93 @@ import imageminPngquant from 'imagemin-pngquant';
 // const imagemin = import('imagemin');
 const images = require('images');
 
-const controleSize = function (source, target) {
-  try {
-    console.log(444, source, target);
-    //压缩jpg  此API为同步方法，可以遍历执行
-    images(source).resize(400).save(target);
-  } catch (error) {
-    console.log(333, error);
-  }
-};
+const MyApi = {
+  controleSize: async function (source, targetDir, width) {
+    try {
+      await fspromises.mkdir(targetDir, { recursive: true });
+    } catch (error) {
+      return {
+        isError: true,
+        msg: error,
+      };
+    }
 
-const controleMiny = function (source, target) {
-  try {
-    imagemin([source], {
-      destination: target,
+    let fileName = path.parse(source).base;
+    let dist = path.join(targetDir, fileName);
+
+    let error = await new Promise((resolve, reject) => {
+      images(source)
+        .resize(width)
+        .saveAsync(dist, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+    }).catch((err) => err);
+
+    if (error) {
+      return {
+        isError: true,
+        msg: error,
+      };
+    } else {
+      let file = await fspromises.stat(dist);
+      return {
+        msg: 'success',
+        sPath: source,
+        tPath: dist,
+        tSize: file.size,
+      };
+    }
+  },
+  controleMiny: async function (source, targetDir, quality = 100) {
+    try {
+      await fspromises.mkdir(targetDir, { recursive: true });
+    } catch (error) {
+      return {
+        isError: true,
+        msg: error,
+      };
+    }
+
+    quality = quality / 100;
+
+    // let fileName = path.parse(source).name;
+    // let dist = path.join(targetDir, fileName);
+
+    let [error, tPath] = await imagemin([source], {
+      destination: targetDir,
       plugins: [
+        imageminJpegtran(),
+        imageminGifsicle({ optimizationLevel: 3, colors: 128 }),
         imageminPngquant({
-          quality: [0.6, 0.7], //压缩质量（0,1）
+          strip: true,
+          quality: [0.3, quality], //压缩质量（0,1）
         }),
       ],
     })
-      .then(() => {
-        console.log('压缩成功');
-      })
-      .catch((err) => {
-        console.log('压缩失败：' + err);
-      });
-  } catch (error) {
-    console.log(333, error);
-  }
+      .then((v) => [null, v[0].destinationPath])
+      .catch((err) => [err]);
+
+    if (error) {
+      return {
+        isError: true,
+        msg: error,
+      };
+    } else {
+      let file = await fspromises.stat(tPath);
+
+      return {
+        msg: 'success',
+        sPath: source,
+        tPath: tPath,
+        tSize: file.size,
+      };
+    }
+  },
 };
 
-contextBridge.exposeInMainWorld('myAPI', {
-  controleSize,
-  controleMiny,
-});
+contextBridge.exposeInMainWorld('myAPI', MyApi);
+contextBridge.exposeInMainWorld('FileAPI', FileUtils);

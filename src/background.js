@@ -3,7 +3,7 @@
  * @Email: dengciping0716@gmail.com
  * @Date: 2021-12-21 11:08:02
  * @LastEditors: ciping.deng
- * @LastEditTime: 2021-12-22 15:31:12
+ * @LastEditTime: 2021-12-25 14:40:02
  * @FilePath: /image-tool/src/background.js
  * @Description:
  */
@@ -14,6 +14,8 @@ import { app, protocol, BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 const isDevelopment = process.env.NODE_ENV !== 'production';
+
+import './node/ipcMain';
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }]);
