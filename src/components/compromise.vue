@@ -3,7 +3,7 @@
  * @Email: dengciping0716@gmail.com
  * @Date: 2021-12-23 14:26:33
  * @LastEditors: ciping.deng
- * @LastEditTime: 2021-12-25 18:07:02
+ * @LastEditTime: 2022-01-05 17:23:10
  * @FilePath: /image-tool/src/components/compromise.vue
  * @Description: 
 -->
@@ -16,7 +16,7 @@
           <v-img :src="require('../assets/icon-logo.svg')" class="my-3" contain height="160" />
         </v-row>
         <v-row justify="center"><span class="text-h6">拖拽图片或文件夹到这里！</span></v-row>
-        <v-row justify="center"><span class="text-caption">支持：PNG、JGP、GIF</span></v-row>
+        <v-row justify="center"><span class="text-caption">支持：PNG、JGP、GIF、WEBP</span></v-row>
         <v-file-input ref="input" chips accept="image/*" multiple truncate-length="15" @change="onSelectFile"></v-file-input>
       </div>
 

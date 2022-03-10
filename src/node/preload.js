@@ -3,7 +3,7 @@
  * @Email: dengciping0716@gmail.com
  * @Date: 2021-12-22 13:08:53
  * @LastEditors: ciping.deng
- * @LastEditTime: 2021-12-25 18:03:39
+ * @LastEditTime: 2022-01-05 17:19:45
  * @FilePath: /image-tool/src/node/preload.js
  * @Description:
  */
@@ -14,6 +14,8 @@ import imagemin from 'imagemin';
 import imageminPngquant from 'imagemin-pngquant';
 const imageminGifsicle = require('imagemin-gifsicle');
 const imageminJpegtran = require('imagemin-jpegtran');
+import imageminWebp from 'imagemin-webp';
+
 import * as FileUtils from './file';
 
 // const imagemin = require('imagemin');
@@ -218,6 +220,7 @@ const MyApi = {
       destination: targetDir,
       plugins: [
         imageminJpegtran(),
+        imageminWebp({ quality: quality }),
         imageminGifsicle({ optimizationLevel: 3, colors: 128 }),
         imageminPngquant({
           strip: true,
